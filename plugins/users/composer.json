@@ -1,0 +1,13 @@
+{
+    "name": "servinder/users-plugin",
+    "description": "Plugin de gerenciamento de usuários para Servinder",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Plugins\\Users\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^8.2"
+    }
+}

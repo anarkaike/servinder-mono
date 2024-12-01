@@ -1,0 +1,61 @@
+version: '3'
+services:
+  app:
+    build:
+      args:
+        user: servinder
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: servinder
+    container_name: servinder-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - servinder
+
+  db:
+    image: mysql:8.0
+    container_name: servinder-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - servinder
+
+  nginx:
+    image: nginx:alpine
+    container_name: servinder-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - servinder
+
+  node:
+    image: node:latest
+    container_name: servinder-node
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www
+    command: npm run dev
+    ports:
+      - "5173:5173"
+    networks:
+      - servinder
+
+networks:
+  servinder:
+    driver: bridge
