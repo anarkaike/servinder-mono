@@ -1,20 +1,32 @@
 {
     "compilerOptions": {
-        "allowJs": true,
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "jsx": "preserve",
+        "target": "esnext",
+        "module": "esnext",
+        "moduleResolution": "node",
         "strict": true,
-        "isolatedModules": true,
-        "target": "ESNext",
+        "jsx": "preserve",
+        "sourceMap": true,
+        "resolveJsonModule": true,
         "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "noEmit": true,
-        "skipLibCheck": true,
+        "experimentalDecorators": true,
+        "useDefineForClassFields": true,
+        "lib": ["esnext", "dom"],
+        "baseUrl": ".",
         "paths": {
-            "@/*": ["./resources/js/*"],
-            "ziggy-js": ["./vendor/tightenco/ziggy"]
-        }
+            "@/*": ["resources/js/*"]
+        },
+        "types": [
+            "vite/client",
+            "node",
+            "@inertiajs/vue3",
+            "@formkit/vue",
+            "vue-facing-decorator"
+        ]
     },
-    "include": ["resources/js/**/*.ts", "resources/js/**/*.d.ts", "resources/js/**/*.vue"]
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.d.ts",
+        "resources/js/**/*.tsx",
+        "resources/js/**/*.vue"
+    ]
 }

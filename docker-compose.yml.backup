@@ -1,0 +1,87 @@
+version: '3.8'
+services:
+    app:
+        build:
+            args:
+                user: servinder
+                uid: 1000
+            context: ./
+            dockerfile: Dockerfile
+        image: servinder-app
+        container_name: servinder-app
+        restart: unless-stopped
+        volumes:
+            - '.:/var/www'
+        networks:
+            - servinder
+    db:
+        image: 'mysql:8.0'
+        container_name: servinder-db
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_USER: '${DB_USERNAME}'
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        volumes:
+            - 'mysql-data:/var/lib/mysql'
+            - './docker-compose/mysql:/docker-entrypoint-initdb.d:ro'
+        networks:
+            - servinder
+    nginx:
+        image: 'nginx:alpine'
+        container_name: servinder-nginx
+        restart: unless-stopped
+        ports:
+            - '8000:80'
+        volumes:
+            - '.:/var/www'
+            - './docker-compose/nginx:/etc/nginx/conf.d:ro'
+        networks:
+            - servinder
+        depends_on:
+            - app
+    node:
+        image: 'node:latest'
+        container_name: servinder-node
+        volumes:
+            - '.:/var/www'
+        working_dir: /var/www
+        command: 'npm run dev'
+        ports:
+            - '3000:3000'
+        networks:
+            - servinder
+    mysql:
+        image: 'mysql/mysql-server:8.0'
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - 'sail-mysql:/var/lib/mysql'
+            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - '-p${DB_PASSWORD}'
+            retries: 3
+            timeout: 5s
+networks:
+    servinder:
+        driver: bridge
+volumes:
+    mysql-data: null
+    sail-mysql:
+        driver: local
